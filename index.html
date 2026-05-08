@@ -1,0 +1,122 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>WorkMandi - Find Workers or Work Instantly</title>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel = "stylesheet" href = "style.css">
+    
+</head>
+<body>
+    <!-- Animated Particles -->
+    <div class="particles" id="particles"></div>
+
+    <div class="container">
+        <!-- Header -->
+        <header class="header">
+            <div class="logo">
+                <div class="logo-icon">
+    <div class = "image"><img src="Gemini_Generated_Image_vbiug5vbiug5vbiu.png" alt="WorkMandi Logo" width="80" height = "80">
+</div>
+                </div>
+                WorkMandi
+            </div>
+            <div class="lang-selector">
+                <button class="lang-btn active" data-lang="en">English</button>
+                <button class="lang-btn" data-lang="hi">हिंदी</button>
+                <button class="lang-btn" data-lang="mr">मराठी</button>
+                <button class="lang-btn" data-lang="ta">தமிழ்</button>
+            </div>
+        </header>
+
+        <!-- Main Content -->
+        <main class="main-content">
+            <h1 class="hero-title">मज़दूर  चाहिए? या काम चाहिए?</h1>
+            <p class="hero-subtitle">India's #1 platform to instantly connect workers with employers. Find verified workers or get work opportunities in minutes!</p>
+            
+            <div class="buttons">
+                <a href="worker-new.html" class="btn btn-worker">
+                    <i class="fas fa-user-hard-hat"></i>
+                    मैं मजदूर हूँ
+                </a>
+                <a href="contractor-fixed.html" class="btn btn-employer">
+                    <i class="fas fa-building"></i>
+                    मजदूरों की आवश्यकता 
+                </a>
+            </div>
+        </main>
+
+        <footer class="footer">
+            <p>&copy; 2026 WorkMandi. All rights reserved. | Made with ❤️ for India's workforce</p>
+        </footer>
+    </div>
+
+    <script>
+        // Create animated particles
+        function createParticles() {
+            const particlesContainer = document.getElementById('particles');
+            for (let i = 0; i < 50; i++) {
+                const particle = document.createElement('div');
+                particle.className = 'particle';
+                particle.style.left = Math.random() * 100 + '%';
+                particle.style.top = Math.random() * 100 + '%';
+                particle.style.width = particle.style.height = (Math.random() * 6 + 2) + 'px';
+                particle.style.animationDelay = Math.random() * 6 + 's';
+                particle.style.animationDuration = (Math.random() * 3 + 4) + 's';
+                particlesContainer.appendChild(particle);
+            }
+        }
+
+        // Language selector functionality
+        document.querySelectorAll('.lang-btn').forEach(btn => {
+            btn.addEventListener('click', function() {
+                document.querySelectorAll('.lang-btn').forEach(b => b.classList.remove('active'));
+                this.classList.add('active');
+                
+                // Here you would typically switch the page content language
+                const lang = this.dataset.lang;
+                console.log('Language switched to:', lang);
+            });
+        });
+
+        // Smooth scroll for buttons
+        document.querySelectorAll('a[href^="#"]').forEach(anchor => {
+            anchor.addEventListener('click', function (e) {
+                e.preventDefault();
+                
+                console.log('Navigating to:', this.getAttribute('href'));
+            });
+        })
+
+       
+        const observerOptions = {
+            threshold: 0.1,
+            rootMargin: '0px 0px -50px 0px'
+        };
+
+        const observer = new IntersectionObserver((entries) => {
+            entries.forEach(entry => {
+                if (entry.isIntersecting) {
+                    entry.target.style.animationPlayState = 'running';
+                }
+            });
+        }, observerOptions);
+
+        // Initialize
+        window.addEventListener('load', () => {
+            createParticles();
+            observer.observe(document.querySelector('.main-content'));
+        });
+
+        // Parallax effect on scroll
+        window.addEventListener('scroll', () => {
+            const scrolled = window.pageYOffset;
+            const particles = document.querySelector('.particles');
+            const speed = scrolled * 0.5;
+            particles.style.transform = `translateY(${speed}px)`;
+        });
+    </script>
+</body>
+</html>

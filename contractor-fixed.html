@@ -1,0 +1,1886 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>WorkMandi - Contractor Dashboard</title>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <script src="supabase-config.js"></script>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Poppins', sans-serif;
+            background: #f8f9fa;
+            min-height: 100vh;
+        }
+        .theme-toggle {
+            border: none;
+            border-radius: 20px;
+            padding: 10px 14px;
+            background: #111827;
+            color: #fff;
+            cursor: pointer;
+        }
+        body.dark-mode {
+            background: #0f172a;
+            color: #e5e7eb;
+        }
+        body.dark-mode .header,
+        body.dark-mode .left-sidebar,
+        body.dark-mode .projects-section,
+        body.dark-mode .stat-card,
+        body.dark-mode .project-card {
+            background: #111827;
+            color: #e5e7eb;
+            border-color: #1f2937;
+        }
+
+        /* Header */
+        .header {
+            background: white;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+            padding: 15px 30px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            position: sticky;
+            top: 0;
+            z-index: 100;
+        }
+
+        .logo {
+            display: flex;
+            align-items: center;
+            font-size: 24px;
+            font-weight: 600;
+            color: #2c3e50;
+        }
+
+        .logo img {
+            width: 40px;
+            height: 40px;
+            margin-right: 10px;
+            border-radius: 8px;
+        }
+
+        .nav-menu {
+            display: flex;
+            gap: 30px;
+            align-items: center;
+        }
+
+        .nav-item {
+            color: #6c757d;
+            text-decoration: none;
+            font-weight: 500;
+            transition: color 0.3s;
+            font-size: 14px;
+        }
+
+        .nav-item:hover {
+            color: #007bff;
+        }
+
+        /* Hero Section */
+        .hero-section {
+            background: linear-gradient(135deg, rgba(102, 126, 234, 0.9), rgba(118, 75, 162, 0.9)),
+                        url('construction.png') center/cover;
+            min-height: 400px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            text-align: center;
+            color: white;
+            position: relative;
+            margin: 20px;
+            border-radius: 20px;
+            overflow: hidden;
+        }
+
+        .hero-section::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: linear-gradient(135deg, rgba(0,0,0,0.3), rgba(0,0,0,0.1));
+            z-index: 1;
+        }
+
+        .hero-content {
+            position: relative;
+            z-index: 2;
+            max-width: 800px;
+            padding: 40px 20px;
+        }
+
+        .hero-title {
+            font-size: 48px;
+            font-weight: 800;
+            margin-bottom: 20px;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.5);
+            line-height: 1.2;
+            animation: fadeInDown 1s ease-out;
+        }
+
+        .hero-subtitle {
+            font-size: 20px;
+            font-weight: 400;
+            margin-bottom: 30px;
+            opacity: 0.95;
+            text-shadow: 1px 1px 2px rgba(0,0,0,0.5);
+            line-height: 1.5;
+            animation: fadeInUp 1s ease-out 0.3s both;
+        }
+
+        .hero-btn {
+            background: linear-gradient(135deg, #28a745, #20c997);
+            color: white;
+            border: none;
+            padding: 18px 40px;
+            font-size: 18px;
+            font-weight: 600;
+            border-radius: 50px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            box-shadow: 0 10px 30px rgba(40, 167, 69, 0.3);
+            display: inline-flex;
+            align-items: center;
+            gap: 12px;
+            animation: fadeInUp 1s ease-out 0.6s both;
+        }
+
+        .hero-btn:hover {
+            transform: translateY(-3px) scale(1.05);
+            box-shadow: 0 15px 40px rgba(40, 167, 69, 0.4);
+            background: linear-gradient(135deg, #218838, #1ea085);
+        }
+
+        .hero-btn i {
+            font-size: 20px;
+        }
+
+        @keyframes fadeInDown {
+            from {
+                opacity: 0;
+                transform: translateY(-30px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        @keyframes fadeInUp {
+            from {
+                opacity: 0;
+                transform: translateY(30px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        /* Main Container */
+        .main-container {
+            display: flex;
+            max-width: 1400px;
+            margin: 0 auto;
+            gap: 20px;
+            padding: 20px;
+            min-height: calc(100vh - 80px);
+        }
+
+        /* Left Sidebar */
+        .left-sidebar {
+            width: 300px;
+            background: white;
+            border-radius: 15px;
+            padding: 20px;
+            box-shadow: 0 5px 20px rgba(0,0,0,0.08);
+            height: fit-content;
+        }
+
+        .sidebar-section {
+            margin-bottom: 25px;
+        }
+
+        .section-title {
+            font-size: 18px;
+            font-weight: 600;
+            color: #2c3e50;
+            margin-bottom: 15px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .job-card {
+            background: #f8f9fa;
+            border-radius: 12px;
+            padding: 15px;
+            margin-bottom: 12px;
+            cursor: pointer;
+            transition: all 0.3s;
+            border: 2px solid transparent;
+        }
+
+        .job-card:hover {
+            background: white;
+            border-color: #007bff;
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(0,123,255,0.2);
+        }
+
+        .job-header {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            margin-bottom: 8px;
+        }
+
+        .job-avatar {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-weight: 600;
+        }
+
+        .job-info h4 {
+            font-size: 16px;
+            color: #2c3e50;
+            margin-bottom: 2px;
+        }
+
+        .job-info p {
+            font-size: 14px;
+            color: #6c757d;
+        }
+
+        .job-meta {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            font-size: 13px;
+            color: #6c757d;
+        }
+
+        .job-price {
+            font-weight: 600;
+            color: #28a745;
+        }
+
+        .invited-btn {
+            width: 100%;
+            padding: 12px;
+            background: linear-gradient(135deg, #007bff, #0056b3);
+            color: white;
+            border: none;
+            border-radius: 10px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s;
+            margin-top: 15px;
+        }
+
+        .invited-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(0,123,255,0.3);
+        }
+
+        /* Main Content */
+        .main-content {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+        }
+
+        /* Hero Section */
+        .hero-section {
+            position: relative;
+            width: 100%;
+            height: 400px;
+            border-radius: 15px;
+            overflow: hidden;
+            margin-bottom: 20px;
+            box-shadow: 0 5px 20px rgba(0,0,0,0.1);
+        }
+
+        .hero-slider {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            height: 100%;
+            gap: 10px;
+        }
+
+        .hero-slide {
+            position: relative;
+            border-radius: 12px;
+            overflow: hidden;
+        }
+
+        .hero-slide img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            transition: transform 0.3s ease;
+        }
+
+        .hero-slide:hover img {
+            transform: scale(1.05);
+        }
+
+        .hero-overlay {
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            background: linear-gradient(to top, rgba(0,0,0,0.8), transparent);
+            padding: 15px;
+            color: white;
+            font-size: 14px;
+        }
+
+        /* Stats Grid */
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 15px;
+            margin-bottom: 20px;
+        }
+
+        .stat-card {
+            background: white;
+            border-radius: 15px;
+            padding: 20px;
+            box-shadow: 0 5px 20px rgba(0,0,0,0.08);
+            text-align: center;
+            transition: all 0.3s;
+        }
+
+        .stat-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 10px 25px rgba(0,0,0,0.15);
+        }
+
+        .stat-icon {
+            width: 50px;
+            height: 50px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin: 0 auto 15px;
+            color: white;
+            font-size: 20px;
+        }
+
+        .stat-number {
+            font-size: 24px;
+            font-weight: 700;
+            color: #2c3e50;
+            margin-bottom: 5px;
+        }
+
+        .stat-label {
+            font-size: 14px;
+            color: #6c757d;
+        }
+
+        /* Projects Section */
+        .projects-section {
+            background: white;
+            border-radius: 15px;
+            padding: 25px;
+            box-shadow: 0 5px 20px rgba(0,0,0,0.08);
+        }
+
+        .section-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+        }
+
+        .section-title {
+            font-size: 20px;
+            font-weight: 600;
+            color: #2c3e50;
+        }
+
+        .project-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+            gap: 20px;
+        }
+
+        .project-card {
+            background: #f8f9fa;
+            border-radius: 12px;
+            padding: 20px;
+            transition: all 0.3s;
+            border: 2px solid transparent;
+        }
+
+        .project-card:hover {
+            background: white;
+            border-color: #007bff;
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(0,123,255,0.2);
+        }
+
+        .project-status {
+            display: inline-block;
+            padding: 4px 12px;
+            border-radius: 20px;
+            font-size: 12px;
+            font-weight: 600;
+            margin-bottom: 10px;
+        }
+
+        .status-active {
+            background: #d4edda;
+            color: #155724;
+        }
+
+        .status-pending {
+            background: #fff3cd;
+            color: #856404;
+        }
+
+        .status-completed {
+            background: #d1ecf1;
+            color: #0c5460;
+        }
+
+        .project-title {
+            font-size: 16px;
+            font-weight: 600;
+            color: #2c3e50;
+            margin-bottom: 8px;
+        }
+
+        .project-meta {
+            font-size: 14px;
+            color: #6c757d;
+            margin-bottom: 5px;
+        }
+
+        /* Create Project Button */
+        .create-project-btn {
+            position: fixed;
+            bottom: 30px;
+            right: 30px;
+            width: 80px;
+            height: 80px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, #667eea, #764ba2, #764ba2, #667eea);
+            background-size: 300% 300%;
+            color: white;
+            border: 3px solid rgba(255,255,255,0.3);
+            font-size: 28px;
+            cursor: pointer;
+            box-shadow: 0 15px 35px rgba(102, 126, 234, 0.4),
+                        0 5px 15px rgba(0,0,0,0.2);
+            transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            z-index: 1000;
+            animation: gradientShift 3s ease infinite, pulse 2s ease-in-out infinite;
+        }
+
+        .create-project-btn:hover {
+            transform: translateY(-8px) scale(1.15) rotate(90deg);
+            box-shadow: 0 25px 50px rgba(102, 126, 234, 0.6),
+                        0 10px 25px rgba(0,0,0,0.3);
+            background: linear-gradient(135deg, #764ba2, #667eea, #667eea, #764ba2);
+        }
+
+        .create-project-btn:active {
+            transform: translateY(-4px) scale(1.1) rotate(45deg);
+        }
+
+        @keyframes gradientShift {
+            0% { background-position: 0% 50%; }
+            50% { background-position: 100% 50%; }
+            100% { background-position: 0% 50%; }
+        }
+
+        @keyframes pulse {
+            0%, 100% { 
+                box-shadow: 0 15px 35px rgba(102, 126, 234, 0.4),
+                           0 5px 15px rgba(0,0,0,0.2);
+            }
+            50% { 
+                box-shadow: 0 20px 40px rgba(102, 126, 234, 0.6),
+                           0 8px 20px rgba(0,0,0,0.3);
+            }
+        }
+
+        /* Multi-step Form Modal */
+        .form-modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0,0,0,0.5);
+            z-index: 2000;
+            overflow-y: auto;
+        }
+
+        .form-container {
+            max-width: 480px;
+            margin: 50px auto;
+            background: white;
+            border-radius: 25px;
+            box-shadow: 0 25px 50px rgba(0,0,0,0.2);
+            overflow: hidden;
+            animation: slideUp 0.5s ease-out;
+        }
+
+        @keyframes slideUp {
+            from {
+                opacity: 0;
+                transform: translateY(50px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .form-header {
+            background: linear-gradient(135deg, rgba(102, 126, 234, 0.8), rgba(118, 75, 162, 0.8)),
+                        url('construction.png') center/cover;
+            color: white;
+            padding: 60px 25px;
+            text-align: center;
+            position: relative;
+            min-height: 250px;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+        }
+
+        .form-header::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: linear-gradient(135deg, rgba(0,0,0,0.4), rgba(0,0,0,0.2));
+            z-index: 1;
+        }
+
+        .form-header > * {
+            position: relative;
+            z-index: 2;
+        }
+
+        .form-illustration {
+            display: none; /* Hide the small circle illustration */
+        }
+
+        .form-title {
+            font-size: 32px;
+            font-weight: 700;
+            margin-bottom: 15px;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.5);
+        }
+
+        .form-subtitle {
+            font-size: 18px;
+            opacity: 0.95;
+            text-shadow: 1px 1px 2px rgba(0,0,0,0.5);
+        }
+
+        .progress-bar {
+            display: flex;
+            justify-content: center;
+            padding: 20px;
+            background: #f8f9fa;
+        }
+
+        .progress-step {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .step-circle {
+            width: 30px;
+            height: 30px;
+            border-radius: 50%;
+            background: #dee2e6;
+            color: #6c757d;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 14px;
+            font-weight: 600;
+            transition: all 0.3s;
+        }
+
+        .step-circle.active {
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            color: white;
+        }
+
+        .step-line {
+            width: 40px;
+            height: 2px;
+            background: #dee2e6;
+        }
+
+        .form-body {
+            padding: 30px 25px;
+            max-height: 60vh;
+            overflow-y: auto;
+        }
+
+        .form-step {
+            display: none;
+        }
+
+        .form-step.active {
+            display: block;
+        }
+
+        .form-group {
+            margin-bottom: 20px;
+        }
+
+        .form-label {
+            display: block;
+            font-size: 16px;
+            font-weight: 600;
+            color: #2c3e50;
+            margin-bottom: 8px;
+        }
+
+        .form-input {
+            width: 100%;
+            padding: 15px 20px;
+            font-size: 16px;
+            border: 2px solid #e1e8ed;
+            border-radius: 15px;
+            background: #f8f9fa;
+            transition: all 0.3s;
+            outline: none;
+        }
+
+        .input-with-voice {
+            display: flex;
+            gap: 10px;
+            align-items: center;
+        }
+
+        .voice-btn {
+            background: #f8f9fa;
+            border: 2px solid #e1e8ed;
+            border-radius: 15px;
+            padding: 15px;
+            cursor: pointer;
+            transition: all 0.3s;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            min-width: 50px;
+            height: 50px;
+            flex-shrink: 0;
+        }
+
+        .voice-btn:hover {
+            background: #e8f0fe;
+            border-color: #667eea;
+        }
+
+        .voice-btn.listening {
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            border-color: #667eea;
+            color: white;
+            animation: voicePulse 1.5s infinite;
+        }
+
+        @keyframes voicePulse {
+            0% { opacity: 1; transform: scale(1); }
+            50% { opacity: 0.8; transform: scale(1.05); }
+            100% { opacity: 1; transform: scale(1); }
+        }
+
+        .voice-btn i {
+            font-size: 18px;
+        }
+
+        .form-input:focus {
+            border-color: #667eea;
+            background: white;
+            box-shadow: 0 5px 15px rgba(102, 126, 234, 0.2);
+        }
+
+        .form-select {
+            width: 100%;
+            padding: 15px 20px;
+            font-size: 16px;
+            border: 2px solid #e1e8ed;
+            border-radius: 15px;
+            background: #f8f9fa;
+            transition: all 0.3s;
+            outline: none;
+            cursor: pointer;
+        }
+
+        .form-select:focus {
+            border-color: #667eea;
+            background: white;
+            box-shadow: 0 5px 15px rgba(102, 126, 234, 0.2);
+        }
+
+        .toggle-group {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 15px 20px;
+            background: #f8f9fa;
+            border-radius: 15px;
+            margin-bottom: 15px;
+        }
+
+        .toggle-label {
+            font-size: 16px;
+            font-weight: 500;
+            color: #2c3e50;
+        }
+
+        .toggle-switch {
+            position: relative;
+            width: 50px;
+            height: 26px;
+            background: #dee2e6;
+            border-radius: 13px;
+            cursor: pointer;
+            transition: background 0.3s;
+        }
+
+        .toggle-switch.active {
+            background: linear-gradient(135deg, #667eea, #764ba2);
+        }
+
+        .toggle-slider {
+            position: absolute;
+            top: 3px;
+            left: 3px;
+            width: 20px;
+            height: 20px;
+            background: white;
+            border-radius: 50%;
+            transition: transform 0.3s;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.2);
+        }
+
+        .toggle-switch.active .toggle-slider {
+            transform: translateX(24px);
+        }
+
+        .checkbox-group {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+            gap: 15px;
+            margin-bottom: 20px;
+        }
+
+        .checkbox-item {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            padding: 12px 15px;
+            background: #f8f9fa;
+            border-radius: 12px;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+
+        .checkbox-item:hover {
+            background: #e9ecef;
+        }
+
+        .checkbox-item input[type="checkbox"] {
+            width: 18px;
+            height: 18px;
+            cursor: pointer;
+        }
+
+        .checkbox-label {
+            font-size: 14px;
+            font-weight: 500;
+            color: #2c3e50;
+            cursor: pointer;
+        }
+
+        .upload-section {
+            margin-bottom: 20px;
+        }
+
+        .upload-area {
+            border: 2px dashed #dee2e6;
+            border-radius: 15px;
+            padding: 30px;
+            text-align: center;
+            cursor: pointer;
+            transition: all 0.3s;
+            background: #f8f9fa;
+        }
+
+        .upload-area:hover {
+            border-color: #667eea;
+            background: rgba(102, 126, 234, 0.05);
+        }
+
+        .upload-icon {
+            font-size: 40px;
+            color: #6c757d;
+            margin-bottom: 15px;
+        }
+
+        .upload-text {
+            font-size: 16px;
+            color: #6c757d;
+            margin-bottom: 10px;
+        }
+
+        .upload-hint {
+            font-size: 14px;
+            color: #adb5bd;
+        }
+
+        .form-actions {
+            display: flex;
+            gap: 15px;
+            padding: 20px 25px;
+            background: #f8f9fa;
+            border-top: 1px solid #dee2e6;
+        }
+
+        .btn {
+            flex: 1;
+            padding: 15px 25px;
+            font-size: 16px;
+            font-weight: 600;
+            border: none;
+            border-radius: 15px;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+
+        .btn-secondary {
+            background: #e9ecef;
+            color: #6c757d;
+        }
+
+        .btn-secondary:hover {
+            background: #dee2e6;
+        }
+
+        .btn-primary {
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            color: white;
+        }
+
+        .btn-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 25px rgba(102, 126, 234, 0.3);
+        }
+
+        .close-modal {
+            position: absolute;
+            top: 20px;
+            right: 20px;
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            background: rgba(255,255,255,0.2);
+            color: white;
+            border: none;
+            font-size: 18px;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+
+        .close-modal:hover {
+            background: rgba(255,255,255,0.3);
+        }
+
+        /* Responsive Design */
+        @media (max-width: 768px) {
+            .hero-section {
+                margin: 10px;
+                min-height: 300px;
+            }
+
+            .hero-title {
+                font-size: 32px;
+                margin-bottom: 15px;
+            }
+
+            .hero-subtitle {
+                font-size: 16px;
+                margin-bottom: 25px;
+            }
+
+            .hero-btn {
+                padding: 15px 30px;
+                font-size: 16px;
+            }
+
+            .main-container {
+                flex-direction: column;
+                padding: 10px;
+            }
+
+            .left-sidebar {
+                width: 100%;
+            }
+
+            .hero-slider {
+                grid-template-columns: repeat(2, 1fr);
+            }
+
+            .create-project-btn {
+                bottom: 20px;
+                right: 20px;
+                width: 70px;
+                height: 70px;
+                font-size: 24px;
+                position: fixed;
+                z-index: 1001;
+            }
+
+            /* Mobile sticky enhancement */
+            @media (max-width: 480px) {
+                .create-project-btn {
+                    bottom: 15px;
+                    right: 15px;
+                    width: 65px;
+                    height: 65px;
+                    font-size: 22px;
+                }
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- Header -->
+    <header class="header">
+        <div class="logo">
+            <img src="Gemini_Generated_Image_vbiug5vbiug5vbiu.png" alt="WorkMandi">
+            Daily Jobs
+        </div>
+        <nav class="nav-menu">
+            <a href="#" class="nav-item">Dashboard</a>
+            <a href="#" class="nav-item">Projects</a>
+            <a href="#" class="nav-item">Workers</a>
+            <a href="#" class="nav-item">Messages</a>
+            <a href="#" class="nav-item">Profile</a>
+            <button class="theme-toggle" onclick="toggleTheme()"><i class="fas fa-moon"></i> Theme</button>
+        </nav>
+    </header>
+
+    <!-- Hero Section -->
+    <section class="hero-section">
+        <div class="hero-content">
+            <h1 class="hero-title">Hire Skilled Workers Easily</h1>
+            <p class="hero-subtitle">Connect with verified construction professionals for your projects. Get quality work done on time.</p>
+            <button class="hero-btn" onclick="document.querySelector('.create-project-btn').click()">
+                <i class="fas fa-plus-circle"></i>
+                Create Project
+            </button>
+        </div>
+    </section>
+
+    <!-- Main Container -->
+    <div class="main-container">
+        <!-- Left Sidebar -->
+        <aside class="left-sidebar">
+            <div class="sidebar-section">
+                <h3 class="section-title">
+                    <i class="fas fa-briefcase"></i>
+                    Active Projects
+                </h3>
+                
+                <div class="job-card">
+                    <div class="job-header">
+                        <div class="job-avatar">
+                            <i class="fas fa-building"></i>
+                        </div>
+                        <div class="job-info">
+                            <h4>Tower Construction</h4>
+                            <p>Mumbai, Maharashtra</p>
+                        </div>
+                    </div>
+                    <div class="job-meta">
+                        <span class="job-price">15 Workers</span>
+                        <span>Active</span>
+                    </div>
+                </div>
+
+                <div class="job-card">
+                    <div class="job-header">
+                        <div class="job-avatar">
+                            <i class="fas fa-home"></i>
+                        </div>
+                        <div class="job-info">
+                            <h4>Residential Complex</h4>
+                            <p>Pune, Maharashtra</p>
+                        </div>
+                    </div>
+                    <div class="job-meta">
+                        <span class="job-price">8 Workers</span>
+                        <span>Active</span>
+                    </div>
+                </div>
+            </div>
+
+            <div class="sidebar-section">
+                <h3 class="section-title">
+                    <i class="fas fa-clock"></i>
+                    Recent Activity
+                </h3>
+                
+                <div class="job-card">
+                    <div class="job-header">
+                        <div class="job-avatar">
+                            <i class="fas fa-user-plus"></i>
+                        </div>
+                        <div class="job-info">
+                            <h4>New Worker Added</h4>
+                            <p>Rajesh Kumar - Mason</p>
+                        </div>
+                    </div>
+                    <div class="job-meta">
+                        <span>2 hours ago</span>
+                    </div>
+                </div>
+            </div>
+
+            <button class="invited-btn">
+                <i class="fas fa-envelope"></i> Invited
+            </button>
+        </aside>
+
+        <!-- Main Content -->
+        <main class="main-content">
+            <!-- Hero Section with Your Images -->
+            <div class="hero-section">
+                <div class="hero-slider">
+                    <div class="hero-slide">
+                        <img src="pexels-bymuratisikofficial-34670929.jpg" alt="Construction worker on site">
+                        <div class="hero-overlay">Construction Site</div>
+                    </div>
+                    <div class="hero-slide">
+                        <img src="pexels-eartharchive-28663715.jpg" alt="Building construction">
+                        <div class="hero-overlay">Building Project</div>
+                    </div>
+                    <div class="hero-slide">
+                        <img src="pexels-ihsanaditya-28196526.jpg" alt="Construction equipment">
+                        <div class="hero-overlay">Heavy Equipment</div>
+                    </div>
+                    <div class="hero-slide">
+                        <img src="shubham-verma-Tlyteh1470o-unsplash.jpg" alt="Construction team">
+                        <div class="hero-overlay">Professional Team</div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Stats Grid -->
+            <div class="stats-grid">
+                <div class="stat-card">
+                    <div class="stat-icon">
+                        <i class="fas fa-project-diagram"></i>
+                    </div>
+                    <div class="stat-number">12</div>
+                    <div class="stat-label">Active Projects</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-icon">
+                        <i class="fas fa-users"></i>
+                    </div>
+                    <div class="stat-number">48</div>
+                    <div class="stat-label">Total Workers</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-icon">
+                        <i class="fas fa-check-circle"></i>
+                    </div>
+                    <div class="stat-number">8</div>
+                    <div class="stat-label">Completed</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-icon">
+                        <i class="fas fa-hourglass-half"></i>
+                    </div>
+                    <div class="stat-number">4</div>
+                    <div class="stat-label">Pending</div>
+                </div>
+            </div>
+
+            <!-- Projects Section -->
+            <div class="projects-section">
+                <div class="section-header">
+                    <h2 class="section-title">Recent Projects</h2>
+                    <button class="btn btn-primary" style="padding: 10px 20px; font-size: 14px; background: linear-gradient(135deg, #667eea, #764ba2); color: white; border: none; border-radius: 8px; cursor: pointer;">
+                        View All
+                    </button>
+                </div>
+
+                <div class="project-grid">
+                    <div class="project-card">
+                        <span class="project-status status-active">Active</span>
+                        <h3 class="project-title">Commercial Building</h3>
+                        <p class="project-meta"><i class="fas fa-map-marker-alt"></i> Mumbai, Maharashtra</p>
+                        <p class="project-meta"><i class="fas fa-users"></i> 12 Workers</p>
+                        <p class="project-meta"><i class="fas fa-calendar"></i> Started: Jan 15, 2026</p>
+                    </div>
+
+                    <div class="project-card">
+                        <span class="project-status status-pending">Pending</span>
+                        <h3 class="project-title">Road Construction</h3>
+                        <p class="project-meta"><i class="fas fa-map-marker-alt"></i> Pune, Maharashtra</p>
+                        <p class="project-meta"><i class="fas fa-users"></i> 8 Workers</p>
+                        <p class="project-meta"><i class="fas fa-calendar"></i> Starting: Feb 1, 2026</p>
+                    </div>
+
+                    <div class="project-card">
+                        <span class="project-status status-completed">Completed</span>
+                        <h3 class="project-title">Bridge Repair</h3>
+                        <p class="project-meta"><i class="fas fa-map-marker-alt"></i> Delhi, NCR</p>
+                        <p class="project-meta"><i class="fas fa-users"></i> 6 Workers</p>
+                        <p class="project-meta"><i class="fas fa-calendar"></i> Completed: Dec 20, 2025</p>
+                    </div>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <!-- Create Project Button -->
+    <button class="create-project-btn">
+        <i class="fas fa-plus"></i>
+    </button>
+
+    <div id="toastContainer" style="position:fixed;top:16px;right:16px;z-index:2300;display:flex;flex-direction:column;gap:10px;"></div>
+
+    <!-- Multi-step Form Modal -->
+    <div class="form-modal" id="formModal">
+        <div class="form-container">
+            <button class="close-modal" id="closeModal">
+                <i class="fas fa-times"></i>
+            </button>
+
+            <!-- Form Header -->
+            <div class="form-header">
+                <h2 class="form-title" id="formTitle">Create New Project</h2>
+                <p class="form-subtitle" id="formSubtitle">Step 1: Project Details</p>
+            </div>
+
+            <!-- Progress Bar -->
+            <div class="progress-bar">
+                <div class="progress-step">
+                    <div class="step-circle active" id="step1Circle">1</div>
+                    <div class="step-line"></div>
+                </div>
+                <div class="progress-step">
+                    <div class="step-circle" id="step2Circle">2</div>
+                    <div class="step-line"></div>
+                </div>
+                <div class="progress-step">
+                    <div class="step-circle" id="step3Circle">3</div>
+                    <div class="step-line"></div>
+                </div>
+                <div class="progress-step">
+                    <div class="step-circle" id="step4Circle">4</div>
+                </div>
+            </div>
+
+            <!-- Form Body -->
+            <div class="form-body">
+                <!-- Step 1: Project Details -->
+                <div class="form-step active" id="step1">
+                    <div class="form-group">
+                        <label class="form-label">Project Name</label>
+                        <div class="input-with-voice">
+                            <input type="text" class="form-input" id="projectName" placeholder="Enter project name">
+                            <button type="button" class="voice-btn" onclick="startVoiceInput('projectName')" title="Voice Input">
+                                <i class="fas fa-microphone"></i>
+                            </button>
+                        </div>
+                    </div>
+
+                    <div class="form-group">
+                        <label class="form-label">Contractor Name</label>
+                        <div class="input-with-voice">
+                            <input type="text" class="form-input" id="contractorName" placeholder="Enter contractor name">
+                            <button type="button" class="voice-btn" onclick="startVoiceInput('contractorName')" title="Voice Input">
+                                <i class="fas fa-microphone"></i>
+                            </button>
+                        </div>
+                    </div>
+
+                    <div class="form-group">
+                        <label class="form-label">Mobile Number</label>
+                        <div class="input-with-voice">
+                            <input type="tel" class="form-input" id="mobileNumber" placeholder="Enter mobile number">
+                            <button type="button" class="voice-btn" onclick="startVoiceInput('mobileNumber')" title="Voice Input">
+                                <i class="fas fa-microphone"></i>
+                            </button>
+                        </div>
+                    </div>
+
+                    <div class="form-group">
+                        <label class="form-label">Email</label>
+                        <div class="input-with-voice">
+                            <input type="email" class="form-input" id="email" placeholder="Enter email address">
+                            <button type="button" class="voice-btn" onclick="startVoiceInput('email')" title="Voice Input">
+                                <i class="fas fa-microphone"></i>
+                            </button>
+                        </div>
+                    </div>
+
+                    <div class="form-group">
+                        <label class="form-label">Pincode</label>
+                        <div class="input-with-voice">
+                            <input type="text" class="form-input" id="pincode" placeholder="Enter pincode">
+                            <button type="button" class="voice-btn" onclick="startVoiceInput('pincode')" title="Voice Input">
+                                <i class="fas fa-microphone"></i>
+                            </button>
+                        </div>
+                    </div>
+
+                    <div class="form-group">
+                        <label class="form-label">City</label>
+                        <div class="input-with-voice">
+                            <input type="text" class="form-input" id="city" placeholder="Enter city">
+                            <button type="button" class="voice-btn" onclick="startVoiceInput('city')" title="Voice Input">
+                                <i class="fas fa-microphone"></i>
+                            </button>
+                        </div>
+                    </div>
+
+                    <div class="form-group">
+                        <label class="form-label">Address Line</label>
+                        <div class="input-with-voice">
+                            <input type="text" class="form-input" id="address" placeholder="Enter complete address">
+                            <button type="button" class="voice-btn" onclick="startVoiceInput('address')" title="Voice Input">
+                                <i class="fas fa-microphone"></i>
+                            </button>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Step 2: Worker Requirements -->
+                <div class="form-step" id="step2">
+                    <div class="form-group">
+                        <label class="form-label">Select Main Skill</label>
+                        <select class="form-select" id="mainSkill">
+                            <option value="">Select main skill</option>
+                            <option value="mason">Mason</option>
+                            <option value="carpenter">Carpenter</option>
+                            <option value="electrician">Electrician</option>
+                            <option value="plumber">Plumber</option>
+                            <option value="painter">Painter</option>
+                            <option value="welder">Welder</option>
+                            <option value="helper">Helper</option>
+                        </select>
+                    </div>
+
+                    <div class="form-group">
+                        <label class="form-label">Number of Workers Required</label>
+                        <div class="input-with-voice">
+                            <input type="number" class="form-input" id="workerCount" placeholder="Enter number of workers">
+                            <button type="button" class="voice-btn" onclick="startVoiceInput('workerCount')" title="Voice Input">
+                                <i class="fas fa-microphone"></i>
+                            </button>
+                        </div>
+                    </div>
+
+                    <div class="form-group">
+                        <label class="form-label">Daily Wages (₹)</label>
+                        <div class="input-with-voice">
+                            <input type="number" class="form-input" id="dailyWages" placeholder="Enter daily wages">
+                            <button type="button" class="voice-btn" onclick="startVoiceInput('dailyWages')" title="Voice Input">
+                                <i class="fas fa-microphone"></i>
+                            </button>
+                        </div>
+                    </div>
+
+                    <div class="toggle-group">
+                        <span class="toggle-label">Food Facility</span>
+                        <div class="toggle-switch" id="foodToggle">
+                            <div class="toggle-slider"></div>
+                        </div>
+                    </div>
+
+                    <div class="toggle-group">
+                        <span class="toggle-label">Accommodation</span>
+                        <div class="toggle-switch" id="accommodationToggle">
+                            <div class="toggle-slider"></div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Step 3: Project Details & Photos -->
+                <div class="form-step" id="step3">
+                    <div class="form-group">
+                        <label class="form-label">Start Date</label>
+                        <input type="date" class="form-input" id="startDate">
+                    </div>
+
+                    <div class="form-group">
+                        <label class="form-label">End Date</label>
+                        <input type="date" class="form-input" id="endDate">
+                    </div>
+
+                    <div class="upload-section">
+                        <label class="form-label">Project Site Photos</label>
+                        <div class="upload-area" id="sitePhotosUpload">
+                            <i class="fas fa-camera upload-icon"></i>
+                            <p class="upload-text">Click to upload project site photos</p>
+                            <p class="upload-hint">Maximum 5 photos, JPG/PNG format</p>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Step 4: Extra Details -->
+                <div class="form-step" id="step4">
+                    <div class="form-group">
+                        <label class="form-label">Builder Name</label>
+                        <div class="input-with-voice">
+                            <input type="text" class="form-input" id="builderName" placeholder="Enter builder name">
+                            <button type="button" class="voice-btn" onclick="startVoiceInput('builderName')" title="Voice Input">
+                                <i class="fas fa-microphone"></i>
+                            </button>
+                        </div>
+                    </div>
+
+                    <div class="form-group">
+                        <label class="form-label">Availability</label>
+                        <select class="form-select" id="availability">
+                            <option value="">Select availability</option>
+                            <option value="immediate">Immediate</option>
+                            <option value="1week">1 Week</option>
+                            <option value="2weeks">2 Weeks</option>
+                            <option value="1month">1 Month</option>
+                        </select>
+                    </div>
+
+                    <div class="form-group">
+                        <label class="form-label">Facilities</label>
+                        <div class="checkbox-group">
+                            <div class="checkbox-item">
+                                <input type="checkbox" id="electricity">
+                                <label for="electricity" class="checkbox-label">Electricity</label>
+                            </div>
+                            <div class="checkbox-item">
+                                <input type="checkbox" id="water">
+                                <label for="water" class="checkbox-label">Water</label>
+                            </div>
+                            <div class="checkbox-item">
+                                <input type="checkbox" id="fan">
+                                <label for="fan" class="checkbox-label">Fan</label>
+                            </div>
+                            <div class="checkbox-item">
+                                <input type="checkbox" id="bed">
+                                <label for="bed" class="checkbox-label">Bed</label>
+                            </div>
+                            <div class="checkbox-item">
+                                <input type="checkbox" id="washroom">
+                                <label for="washroom" class="checkbox-label">Washroom</label>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="toggle-group">
+                        <span class="toggle-label">PPE Kit Provided</span>
+                        <div class="toggle-switch" id="ppeToggle">
+                            <div class="toggle-slider"></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Form Actions -->
+            <div class="form-actions">
+                <button class="btn btn-secondary" id="prevBtn" style="display: none;">Previous</button>
+                <button class="btn btn-primary" id="nextBtn">Continue</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Form Management
+        let currentStep = 1;
+        const totalSteps = 4;
+        let uploadedProjectPhotoUrls = [];
+
+        // DOM Elements
+        const formModal = document.getElementById('formModal');
+        const createProjectBtn = document.querySelector('.create-project-btn');
+        const closeModal = document.getElementById('closeModal');
+        const prevBtn = document.getElementById('prevBtn');
+        const nextBtn = document.getElementById('nextBtn');
+        const formTitle = document.getElementById('formTitle');
+        const formSubtitle = document.getElementById('formSubtitle');
+        const contractorThemeKey = 'contractor-theme';
+
+        function showToast(message, type = 'info') {
+            const container = document.getElementById('toastContainer');
+            const toast = document.createElement('div');
+            const color = type === 'error' ? '#dc3545' : type === 'success' ? '#28a745' : '#343a40';
+            toast.style.cssText = `background:${color};color:#fff;padding:10px 14px;border-radius:10px;box-shadow:0 8px 20px rgba(0,0,0,.2);font-size:14px;max-width:340px`;
+            toast.textContent = message;
+            container.appendChild(toast);
+            setTimeout(() => toast.remove(), 3500);
+        }
+        function toggleTheme() {
+            document.body.classList.toggle('dark-mode');
+            localStorage.setItem(contractorThemeKey, document.body.classList.contains('dark-mode') ? 'dark' : 'light');
+        }
+        const savedTheme = localStorage.getItem(contractorThemeKey);
+        if (savedTheme === 'dark') {
+            document.body.classList.add('dark-mode');
+        }
+
+        // Step titles, subtitles, and images
+        const stepInfo = {
+            1: { title: 'Create New Project', subtitle: 'Step 1: Project Details', image: 'construction.png' },
+            2: { title: 'Worker Requirements', subtitle: 'Step 2: Worker Requirements', image: 'workersline.jpg' },
+            3: { title: 'Project Details & Photos', subtitle: 'Step 3: Project Details & Photos', image: 'project details.jpg' },
+            4: { title: 'Extra Details', subtitle: 'Step 4: Extra Details', image: 'facility.jpg' }
+        };
+
+        // Open Modal
+        createProjectBtn.addEventListener('click', () => {
+            formModal.style.display = 'block';
+            resetForm();
+        });
+
+        // Close Modal
+        closeModal.addEventListener('click', () => {
+            formModal.style.display = 'none';
+        });
+
+        // Close on outside click
+        formModal.addEventListener('click', (e) => {
+            if (e.target === formModal) {
+                formModal.style.display = 'none';
+            }
+        });
+
+        // Toggle Switches
+        document.querySelectorAll('.toggle-switch').forEach(toggle => {
+            toggle.addEventListener('click', function() {
+                this.classList.toggle('active');
+            });
+        });
+
+        // Navigation
+        nextBtn.addEventListener('click', () => {
+            if (validateCurrentStep()) {
+                if (currentStep < totalSteps) {
+                    currentStep++;
+                    updateFormStep();
+                } else {
+                    submitForm();
+                }
+            }
+        });
+
+        prevBtn.addEventListener('click', () => {
+            if (currentStep > 1) {
+                currentStep--;
+                updateFormStep();
+            }
+        });
+
+        function updateFormStep() {
+            // Hide all steps
+            document.querySelectorAll('.form-step').forEach(step => {
+                step.classList.remove('active');
+            });
+
+            // Show current step
+            document.getElementById(`step${currentStep}`).classList.add('active');
+
+            // Update progress bar
+            for (let i = 1; i <= totalSteps; i++) {
+                const circle = document.getElementById(`step${i}Circle`);
+                if (i <= currentStep) {
+                    circle.classList.add('active');
+                } else {
+                    circle.classList.remove('active');
+                }
+            }
+
+            // Update header
+            formTitle.textContent = stepInfo[currentStep].title;
+            formSubtitle.textContent = stepInfo[currentStep].subtitle;
+
+            // Update background image
+            const formHeader = document.querySelector('.form-header');
+            formHeader.style.background = `linear-gradient(135deg, rgba(102, 126, 234, 0.8), rgba(118, 75, 162, 0.8)),
+                                        url('${stepInfo[currentStep].image}') center/cover`;
+
+            // Update buttons
+            if (currentStep === 1) {
+                prevBtn.style.display = 'none';
+                nextBtn.textContent = 'Continue';
+            } else if (currentStep === totalSteps) {
+                prevBtn.style.display = 'block';
+                nextBtn.textContent = 'Submit Project';
+            } else {
+                prevBtn.style.display = 'block';
+                nextBtn.textContent = 'Continue';
+            }
+        }
+
+        function validateCurrentStep() {
+            if (currentStep === 1) {
+                const requiredIds = ['projectName', 'contractorName', 'mobileNumber', 'email', 'city', 'address'];
+                for (const id of requiredIds) {
+                    const input = document.getElementById(id);
+                    if (!input.value.trim()) {
+                        input.focus();
+                        showToast('Please fill all mandatory project and contact details.', 'error');
+                        return false;
+                    }
+                }
+                if (!/^\d{10}$/.test(document.getElementById('mobileNumber').value.trim().replace(/\D/g, ''))) {
+                    showToast('Please enter a valid 10-digit mobile number.', 'error');
+                    return false;
+                }
+                if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(document.getElementById('email').value.trim())) {
+                    showToast('Please enter a valid email address.', 'error');
+                    return false;
+                }
+            }
+            if (currentStep === 2) {
+                const mainSkill = document.getElementById('mainSkill').value;
+                const workerCount = Number(document.getElementById('workerCount').value);
+                const dailyWages = Number(document.getElementById('dailyWages').value);
+                if (!mainSkill || !workerCount || !dailyWages) {
+                    showToast('Please enter worker requirements and wages.', 'error');
+                    return false;
+                }
+                if (workerCount < 1 || workerCount > 1000) {
+                    showToast('Worker count must be between 1 and 1000.', 'error');
+                    return false;
+                }
+                if (dailyWages < 100) {
+                    showToast('Daily wages should be at least 100.', 'error');
+                    return false;
+                }
+            }
+            if (currentStep === 3) {
+                const startDate = document.getElementById('startDate').value;
+                const endDate = document.getElementById('endDate').value;
+                if (startDate && endDate && new Date(endDate) < new Date(startDate)) {
+                    showToast('End date cannot be before start date.', 'error');
+                    return false;
+                }
+            }
+            return true;
+        }
+
+        function resetForm() {
+            currentStep = 1;
+            updateFormStep();
+            
+            // Reset all form fields
+            document.querySelectorAll('.form-input, .form-select').forEach(input => {
+                input.value = '';
+            });
+
+            // Reset toggles
+            document.querySelectorAll('.toggle-switch').forEach(toggle => {
+                toggle.classList.remove('active');
+            });
+
+            // Reset checkboxes
+            document.querySelectorAll('input[type="checkbox"]').forEach(checkbox => {
+                checkbox.checked = false;
+            });
+            uploadedProjectPhotoUrls = [];
+            const uploadText = document.querySelector('#sitePhotosUpload .upload-text');
+            if (uploadText) uploadText.textContent = 'Click to upload project site photos';
+        }
+
+        async function submitForm() {
+            // Collect form data
+            const formData = {
+                step1: {
+                    projectName: document.getElementById('projectName').value,
+                    contractorName: document.getElementById('contractorName').value,
+                    mobileNumber: document.getElementById('mobileNumber').value,
+                    email: document.getElementById('email').value,
+                    pincode: document.getElementById('pincode').value,
+                    city: document.getElementById('city').value,
+                    address: document.getElementById('address').value
+                },
+                step2: {
+                    mainSkill: document.getElementById('mainSkill').value,
+                    workerCount: document.getElementById('workerCount').value,
+                    dailyWages: document.getElementById('dailyWages').value,
+                    foodFacility: document.getElementById('foodToggle').classList.contains('active'),
+                    accommodation: document.getElementById('accommodationToggle').classList.contains('active')
+                },
+                step3: {
+                    startDate: document.getElementById('startDate').value,
+                    endDate: document.getElementById('endDate').value
+                },
+                step4: {
+                    builderName: document.getElementById('builderName').value,
+                    availability: document.getElementById('availability').value,
+                    facilities: getCheckedFacilities(),
+                    ppeKit: document.getElementById('ppeToggle').classList.contains('active')
+                }
+            };
+
+            const submitBtn = document.getElementById('nextBtn');
+            submitBtn.disabled = true;
+            submitBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Submitting...';
+
+            // Prepare contractor data
+            const contractorData = {
+                name: formData.step1.contractorName,
+                mobile: formData.step1.mobileNumber,
+                email: formData.step1.email,
+                pincode: formData.step1.pincode,
+                city: formData.step1.city,
+                address: formData.step1.address,
+                created_at: new Date().toISOString()
+            };
+
+            // Prepare project data
+            const projectData = {
+                project_name: formData.step1.projectName,
+                contractor_name: formData.step1.contractorName,
+                contractor_mobile: formData.step1.mobileNumber,
+                location: `${formData.step1.city}, ${formData.step1.address}`,
+                main_skill_required: formData.step2.mainSkill,
+                worker_count: formData.step2.workerCount,
+                daily_wages: formData.step2.dailyWages,
+                food_facility: formData.step2.foodFacility,
+                accommodation: formData.step2.accommodation,
+                start_date: formData.step3.startDate,
+                end_date: formData.step3.endDate,
+                builder_name: formData.step4.builderName,
+                availability: formData.step4.availability,
+                facilities: formData.step4.facilities.join(','),
+                ppe_kit: formData.step4.ppeKit,
+                site_image_url: uploadedProjectPhotoUrls[0] || null,
+                created_at: new Date().toISOString()
+            };
+
+            // Save to Supabase
+            try {
+                const [contractorResult, projectResult] = await Promise.all([
+                    dbOperations.saveContractor(contractorData),
+                    dbOperations.saveProject(projectData)
+                ]);
+                if (!contractorResult.success || !projectResult.success) {
+                    throw new Error(contractorResult.error || projectResult.error || 'Failed to save project');
+                }
+                showToast('Project created successfully!', 'success');
+                formModal.style.display = 'none';
+                resetForm();
+            } catch (error) {
+                console.error('Error saving to Supabase:', error);
+                showToast(error.message || 'Failed to save data. Please try again.', 'error');
+            } finally {
+                submitBtn.disabled = false;
+                submitBtn.textContent = 'Submit Project';
+            }
+        }
+
+        function getCheckedFacilities() {
+            const facilities = [];
+            const checkboxes = document.querySelectorAll('.checkbox-item input[type="checkbox"]:checked');
+            checkboxes.forEach(checkbox => {
+                facilities.push(checkbox.id);
+            });
+            return facilities;
+        }
+
+        // Upload functionality
+        const sitePhotosUpload = document.getElementById('sitePhotosUpload');
+        sitePhotosUpload.addEventListener('click', function() {
+            const input = document.createElement('input');
+            input.type = 'file';
+            input.accept = 'image/*';
+            input.multiple = true;
+            input.click();
+            input.addEventListener('change', async function(e) {
+                const files = Array.from(e.target.files).slice(0, 5);
+                if (!files.length) return;
+                const uploadText = sitePhotosUpload.querySelector('.upload-text');
+                uploadText.textContent = 'Uploading photos...';
+                try {
+                    const results = await Promise.all(files.map(file => dbOperations.uploadFile(file, STORAGE_BUCKETS.PROJECT_MEDIA, 'sites')));
+                    uploadedProjectPhotoUrls = results.filter(r => r.success && r.data?.publicUrl).map(r => r.data.publicUrl);
+                    uploadText.textContent = `${uploadedProjectPhotoUrls.length} photo(s) uploaded`;
+                    showToast('Site photos uploaded successfully.', 'success');
+                } catch (error) {
+                    console.error('Upload failed', error);
+                    uploadText.textContent = 'Click to upload project site photos';
+                    showToast('Photo upload failed. You can submit without photos.', 'error');
+                }
+            });
+        });
+
+        // Project card interactions
+        document.querySelectorAll('.project-card, .job-card').forEach(card => {
+            card.addEventListener('click', function() {
+                console.log('Card clicked:', this.querySelector('h3, h4').textContent);
+            });
+        });
+
+        // Navigation menu
+        document.querySelectorAll('.nav-item').forEach(item => {
+            item.addEventListener('click', function(e) {
+                e.preventDefault();
+                showToast(`${this.textContent.trim()} section coming soon`, 'info');
+            });
+        });
+
+        // Voice Input Functionality
+        let recognition;
+        let currentInputField = null;
+
+        // Initialize speech recognition
+        function initSpeechRecognition() {
+            if (!('webkitSpeechRecognition' in window) && !('SpeechRecognition' in window)) {
+                console.warn('Speech recognition not supported');
+                return false;
+            }
+
+            const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+            recognition = new SpeechRecognition();
+            
+            // Set language to English
+            recognition.lang = 'en-US';
+            recognition.continuous = false;
+            recognition.interimResults = true;
+            recognition.maxAlternatives = 1;
+
+            recognition.onstart = function() {
+                console.log('Voice recognition started');
+                if (currentInputField) {
+                    const button = document.querySelector(`button[onclick="startVoiceInput('${currentInputField}')"]`);
+                    if (button) {
+                        button.classList.add('listening');
+                        button.innerHTML = '<i class="fas fa-microphone-slash"></i>';
+                        button.title = 'Listening...';
+                    }
+                }
+            };
+
+            recognition.onresult = function(event) {
+                const result = event.results[0][0].transcript;
+                if (currentInputField) {
+                    const input = document.getElementById(currentInputField);
+                    if (input) {
+                        input.value = result;
+                    }
+                }
+            };
+
+            recognition.onerror = function(event) {
+                console.error('Speech recognition error:', event.error);
+                let errorMessage = 'Voice recognition failed';
+                
+                if (event.error === 'not-allowed') {
+                    errorMessage = 'Microphone access denied. Please allow microphone access.';
+                } else if (event.error === 'no-speech') {
+                    errorMessage = 'No speech detected. Please try again.';
+                } else if (event.error === 'network') {
+                    errorMessage = 'Network error. Please check your connection.';
+                }
+                
+                showToast(errorMessage, 'error');
+                stopListening();
+            };
+
+            recognition.onend = function() {
+                console.log('Voice recognition ended');
+                stopListening();
+            };
+
+            return true;
+        }
+
+        // Start voice input for a specific field
+        function startVoiceInput(fieldId) {
+            currentInputField = fieldId;
+            
+            // Initialize recognition if not already done
+            if (!recognition) {
+                if (!initSpeechRecognition()) {
+                    showToast('Voice input is not supported in this browser.', 'error');
+                    return;
+                }
+            }
+            
+            // Set language to English
+            recognition.lang = 'en-US';
+            
+            try {
+                recognition.start();
+            } catch (error) {
+                console.error('Failed to start recognition:', error);
+                if (error.name === 'InvalidStateError') {
+                    recognition.stop();
+                    setTimeout(() => {
+                        recognition.start();
+                    }, 100);
+                }
+            }
+        }
+
+        // Stop listening and reset UI
+        function stopListening() {
+            if (currentInputField) {
+                const button = document.querySelector(`button[onclick="startVoiceInput('${currentInputField}')"]`);
+                if (button) {
+                    button.classList.remove('listening');
+                    button.innerHTML = '<i class="fas fa-microphone"></i>';
+                    button.title = 'Voice Input';
+                }
+            }
+            currentInputField = null;
+        }
+
+        // Hero slide interactions
+        document.querySelectorAll('.hero-slide').forEach(slide => {
+            slide.addEventListener('click', function() {
+                console.log('Hero slide clicked');
+            });
+        });
+    </script>
+</body>
+</html>

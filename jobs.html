@@ -1,0 +1,990 @@
+<!DOCTYPE html>
+<html lang="hi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>WorkMandi - Jobs</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <script src="supabase-config.js"></script>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+            background: #f8f9fa;
+            color: #1a1a1a;
+            line-height: 1.5;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 0 20px;
+        }
+
+        /* Header Section */
+        .header-section {
+            background: white;
+            padding: 20px 0;
+            border-bottom: 1px solid #e9ecef;
+            position: sticky;
+            top: 0;
+            z-index: 100;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+        }
+
+        .header-content {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 15px;
+        }
+
+        .job-heading {
+            font-size: clamp(18px, 4vw, 24px);
+            font-weight: 600;
+            color: #2c3e50;
+        }
+
+        .show-all-btn {
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            color: white;
+            border: none;
+            padding: 12px 24px;
+            font-size: clamp(14px, 3vw, 16px);
+            font-weight: 600;
+            border-radius: 25px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            box-shadow: 0 4px 12px rgba(102, 126, 234, 0.3);
+        }
+
+        .show-all-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(102, 126, 234, 0.4);
+        }
+        .theme-btn {
+            background: #212529;
+            color: #fff;
+            border: none;
+            padding: 10px 16px;
+            border-radius: 20px;
+            cursor: pointer;
+        }
+        body.dark-mode {
+            background: #0f172a;
+            color: #e5e7eb;
+        }
+        body.dark-mode .header-section,
+        body.dark-mode .filter-section,
+        body.dark-mode .job-card,
+        body.dark-mode .bottom-toggle {
+            background: #111827;
+            border-color: #1f2937;
+            color: #e5e7eb;
+        }
+        body.dark-mode .job-title,
+        body.dark-mode .toggle-label,
+        body.dark-mode .job-heading {
+            color: #f9fafb;
+        }
+
+        /* Category Filters */
+        .filter-section {
+            background: white;
+            padding: 20px 0;
+            border-bottom: 1px solid #e9ecef;
+        }
+
+        .filter-buttons {
+            display: flex;
+            gap: 12px;
+            overflow-x: auto;
+            padding: 5px 0;
+            scrollbar-width: thin;
+        }
+
+        .filter-buttons::-webkit-scrollbar {
+            height: 6px;
+        }
+
+        .filter-buttons::-webkit-scrollbar-track {
+            background: #f1f1f1;
+            border-radius: 3px;
+        }
+
+        .filter-buttons::-webkit-scrollbar-thumb {
+            background: #888;
+            border-radius: 3px;
+        }
+
+        .filter-btn {
+            background: #e9ecef;
+            color: #6c757d;
+            border: none;
+            padding: 10px 20px;
+            font-size: clamp(14px, 3vw, 16px);
+            font-weight: 500;
+            border-radius: 20px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            white-space: nowrap;
+            min-width: fit-content;
+        }
+
+        .filter-btn:hover {
+            background: #dee2e6;
+            transform: translateY(-1px);
+        }
+
+        .filter-btn.active {
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            color: white;
+            box-shadow: 0 4px 12px rgba(102, 126, 234, 0.3);
+        }
+
+        .filter-btn.active:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(102, 126, 234, 0.4);
+        }
+
+        /* Jobs Section */
+        .jobs-section {
+            padding: 30px 0;
+            min-height: calc(100vh - 300px);
+        }
+
+        .jobs-grid {
+            display: grid;
+            gap: 20px;
+            grid-template-columns: 1fr;
+        }
+
+        /* Job Card */
+        .job-card {
+            background: white;
+            border-radius: 16px;
+            padding: 20px;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.08);
+            transition: all 0.3s ease;
+            border: 1px solid #f1f3f4;
+        }
+
+        .job-card:hover {
+            transform: translateY(-4px);
+            box-shadow: 0 8px 25px rgba(0,0,0,0.12);
+            border-color: #e1e5e9;
+        }
+
+        .job-card-content {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            gap: 20px;
+            flex-wrap: wrap;
+        }
+
+        .job-left {
+            display: flex;
+            align-items: flex-start;
+            gap: 15px;
+            flex: 1;
+            min-width: 0;
+        }
+
+        .job-icon {
+            width: 48px;
+            height: 48px;
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            border-radius: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-size: 20px;
+            flex-shrink: 0;
+        }
+
+        .job-details {
+            flex: 1;
+            min-width: 0;
+        }
+
+        .job-title {
+            font-size: clamp(16px, 4vw, 20px);
+            font-weight: 600;
+            color: #2c3e50;
+            margin-bottom: 8px;
+        }
+
+        .job-location {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            color: #6c757d;
+            font-size: clamp(14px, 3vw, 16px);
+            margin-bottom: 8px;
+        }
+
+        .job-location i {
+            font-size: 14px;
+        }
+
+        .job-meta {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 15px;
+            align-items: center;
+        }
+
+        .job-salary {
+            background: #d4edda;
+            color: #155724;
+            padding: 6px 12px;
+            border-radius: 8px;
+            font-weight: 600;
+            font-size: clamp(14px, 3vw, 16px);
+        }
+
+        .job-workers {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            color: #6c757d;
+            font-size: clamp(12px, 2.5vw, 14px);
+        }
+
+        .verified-badge {
+            display: flex;
+            align-items: center;
+            gap: 4px;
+            color: #28a745;
+            font-size: clamp(12px, 2.5vw, 14px);
+            font-weight: 500;
+        }
+
+        .verified-badge i {
+            font-size: 12px;
+        }
+
+        .job-right {
+            flex-shrink: 0;
+        }
+
+        .apply-btn {
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            color: white;
+            border: none;
+            padding: 12px 24px;
+            font-size: clamp(14px, 3vw, 16px);
+            font-weight: 600;
+            border-radius: 12px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            white-space: nowrap;
+            box-shadow: 0 4px 12px rgba(102, 126, 234, 0.3);
+        }
+
+        .apply-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(102, 126, 234, 0.4);
+        }
+
+        /* Location Buttons */
+        .location-buttons {
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+            margin-top: 12px;
+        }
+
+        .location-btn {
+            background: white;
+            color: #667eea;
+            border: 2px solid #667eea;
+            padding: 8px 16px;
+            font-size: clamp(12px, 2.5vw, 14px);
+            font-weight: 500;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 6px;
+            white-space: nowrap;
+        }
+
+        .location-btn:hover {
+            background: #667eea;
+            color: white;
+            transform: translateY(-1px);
+        }
+
+        .location-btn i {
+            font-size: 12px;
+        }
+
+        .view-btn {
+            border-color: #28a745;
+            color: #28a745;
+        }
+
+        .view-btn:hover {
+            background: #28a745;
+            color: white;
+        }
+
+        .navigate-btn {
+            border-color: #dc3545;
+            color: #dc3545;
+        }
+
+        .navigate-btn:hover {
+            background: #dc3545;
+            color: white;
+        }
+
+        /* Bottom Toggle */
+        .bottom-toggle {
+            position: fixed;
+            bottom: 20px;
+            left: 50%;
+            transform: translateX(-50%);
+            background: white;
+            padding: 15px 25px;
+            border-radius: 30px;
+            box-shadow: 0 8px 25px rgba(0,0,0,0.15);
+            display: flex;
+            align-items: center;
+            gap: 15px;
+            z-index: 1000;
+        }
+
+        .toggle-label {
+            font-size: clamp(14px, 3vw, 16px);
+            font-weight: 500;
+            color: #2c3e50;
+        }
+
+        .toggle-switch {
+            position: relative;
+            width: 50px;
+            height: 26px;
+        }
+
+        .toggle-switch input {
+            opacity: 0;
+            width: 0;
+            height: 0;
+        }
+
+        .toggle-slider {
+            position: absolute;
+            cursor: pointer;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: #ccc;
+            transition: 0.4s;
+            border-radius: 26px;
+        }
+
+        .toggle-slider:before {
+            position: absolute;
+            content: "";
+            height: 18px;
+            width: 18px;
+            left: 4px;
+            bottom: 4px;
+            background: white;
+            transition: 0.4s;
+            border-radius: 50%;
+        }
+
+        input:checked + .toggle-slider {
+            background: linear-gradient(135deg, #667eea, #764ba2);
+        }
+
+        input:checked + .toggle-slider:before {
+            transform: translateX(24px);
+        }
+
+        /* Loading State */
+        .loading {
+            text-align: center;
+            padding: 40px;
+            color: #6c757d;
+        }
+
+        .loading i {
+            font-size: 24px;
+            animation: spin 1s linear infinite;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        /* Mobile Responsive */
+        @media (max-width: 768px) {
+            .header-content {
+                flex-direction: column;
+                align-items: stretch;
+            }
+
+            .job-heading {
+                text-align: center;
+            }
+
+            .show-all-btn {
+                width: 100%;
+                justify-content: center;
+            }
+
+            .job-card-content {
+                flex-direction: column;
+                align-items: stretch;
+            }
+
+            .job-left {
+                width: 100%;
+            }
+
+            .job-right {
+                width: 100%;
+            }
+
+            .apply-btn {
+                width: 100%;
+                justify-content: center;
+            }
+
+            .location-buttons {
+                flex-direction: row;
+                gap: 8px;
+            }
+
+            .location-btn {
+                flex: 1;
+                padding: 10px 8px;
+                font-size: 11px;
+            }
+
+            .bottom-toggle {
+                width: calc(100% - 40px);
+                max-width: 350px;
+            }
+        }
+
+        @media (max-width: 480px) {
+            .container {
+                padding: 0 15px;
+            }
+
+            .job-card {
+                padding: 15px;
+            }
+
+            .job-icon {
+                width: 40px;
+                height: 40px;
+                font-size: 18px;
+            }
+
+            .bottom-toggle {
+                bottom: 15px;
+                padding: 12px 20px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- Header Section -->
+    <header class="header-section">
+        <div class="container">
+            <div class="header-content">
+                <h1 class="job-heading" id="jobHeading">Showing jobs for: Mason in Bhopal</h1>
+                <button class="show-all-btn" onclick="showAllJobs()">
+                    <i class="fas fa-th-list"></i>
+                    Show All Jobs
+                </button>
+                <button class="theme-btn" onclick="toggleTheme()">
+                    <i class="fas fa-moon"></i> Theme
+                </button>
+            </div>
+        </div>
+    </header>
+
+    <!-- Category Filters -->
+    <section class="filter-section">
+        <div class="container">
+            <div class="filter-buttons">
+                <button class="filter-btn active" onclick="filterJobs('mason')">
+                    <i class="fas fa-hammer"></i>
+                    Mason
+                </button>
+                <button class="filter-btn" onclick="filterJobs('electrician')">
+                    <i class="fas fa-bolt"></i>
+                    Electrician
+                </button>
+                <button class="filter-btn" onclick="filterJobs('painter')">
+                    <i class="fas fa-paint-brush"></i>
+                    Painter
+                </button>
+                <button class="filter-btn" onclick="filterJobs('plumber')">
+                    <i class="fas fa-wrench"></i>
+                    Plumber
+                </button>
+                <button class="filter-btn" onclick="filterJobs('carpenter')">
+                    <i class="fas fa-saw"></i>
+                    Carpenter
+                </button>
+                <button class="filter-btn" onclick="filterJobs('welder')">
+                    <i class="fas fa-fire"></i>
+                    Welder
+                </button>
+            </div>
+        </div>
+    </section>
+
+    <!-- Jobs Section -->
+    <main class="jobs-section">
+        <div class="container">
+            <div class="jobs-grid" id="jobsGrid">
+                <!-- Job Cards will be inserted here -->
+            </div>
+        </div>
+    </main>
+
+    <!-- Bottom Toggle -->
+    <div class="bottom-toggle">
+        <span class="toggle-label">Show Relevant Jobs</span>
+        <label class="toggle-switch">
+            <input type="checkbox" id="relevantToggle" checked onchange="toggleRelevantJobs()">
+            <span class="toggle-slider"></span>
+        </label>
+    </div>
+    <div id="toastContainer" style="position:fixed;top:16px;right:16px;z-index:1200;display:flex;flex-direction:column;gap:10px;"></div>
+
+    <script>
+        // Dynamic Job Data from Supabase
+        let jobsData = [];
+        let currentFilter = 'mason';
+        let showRelevantOnly = true;
+        const jobsThemeKey = 'jobs-theme';
+
+        // Initialize
+        document.addEventListener('DOMContentLoaded', () => {
+            const savedTheme = localStorage.getItem(jobsThemeKey);
+            if (savedTheme === 'dark') document.body.classList.add('dark-mode');
+            loadJobsFromSupabase();
+        });
+        function toggleTheme() {
+            document.body.classList.toggle('dark-mode');
+            localStorage.setItem(jobsThemeKey, document.body.classList.contains('dark-mode') ? 'dark' : 'light');
+        }
+
+        // Load jobs from Supabase
+        function escapeHtml(value) {
+            return String(value ?? '')
+                .replace(/&/g, '&amp;')
+                .replace(/</g, '&lt;')
+                .replace(/>/g, '&gt;')
+                .replace(/"/g, '&quot;')
+                .replace(/'/g, '&#39;');
+        }
+
+        function showToast(message, type = 'info') {
+            const container = document.getElementById('toastContainer');
+            const toast = document.createElement('div');
+            const bg = type === 'error' ? '#dc3545' : type === 'success' ? '#28a745' : '#343a40';
+            toast.style.cssText = `background:${bg};color:#fff;padding:10px 14px;border-radius:10px;box-shadow:0 8px 20px rgba(0,0,0,.2);font-size:14px;max-width:320px`;
+            toast.textContent = message;
+            container.appendChild(toast);
+            setTimeout(() => toast.remove(), 3200);
+        }
+
+        async function loadJobsFromSupabase() {
+            const jobsGrid = document.getElementById('jobsGrid');
+            jobsGrid.innerHTML = `
+                <div class="loading">
+                    <i class="fas fa-spinner"></i>
+                    <p>Loading jobs...</p>
+                </div>
+            `;
+
+            try {
+                const result = await dbOperations.getProjects();
+                if (result.success) {
+                    jobsData = result.data.map(project => ({
+                        id: project.id,
+                        title: project.project_name || 'Untitled Project',
+                        category: (project.main_skill_required || 'other').toLowerCase(),
+                        location: project.location || [project.city, project.address].filter(Boolean).join(', ') || 'Location not provided',
+                        site_image_url: project.site_image_url,
+                        salary: project.daily_wages || 'Negotiable',
+                        workers: project.worker_count || 1,
+                        verified: true, // Assuming all projects from Supabase are verified
+                        icon: getSkillIcon((project.main_skill_required || 'other').toLowerCase()),
+                        contractor_name: project.contractor_name || 'Contractor'
+                    }));
+                    renderJobs();
+                } else {
+                    console.error('Failed to load jobs:', result.error);
+                    showToast('Live jobs unavailable. Showing demo data.', 'error');
+                    fallbackToDefaultJobs();
+                }
+            } catch (error) {
+                console.error('Error loading jobs from Supabase:', error);
+                showToast('Network issue. Showing demo jobs.', 'error');
+                fallbackToDefaultJobs();
+            }
+        }
+
+        // Fallback to default jobs if Supabase fails
+        function fallbackToDefaultJobs() {
+            jobsData = [
+                {
+                    id: 1,
+                    title: 'Mason Work',
+                    category: 'mason',
+                    location: 'Bhopal, Madhya Pradesh',
+                    site_image_url: null,
+                    salary: '₹500/day',
+                    workers: 4,
+                    verified: true,
+                    icon: 'fa-hammer'
+                },
+                {
+                    id: 2,
+                    title: 'Plumbing Work',
+                    category: 'plumber',
+                    location: 'Indore, Madhya Pradesh',
+                    site_image_url: null,
+                    salary: '₹600/day',
+                    workers: 2,
+                    verified: true,
+                    icon: 'fa-wrench'
+                },
+                {
+                    id: 3,
+                    title: 'Painting Job',
+                    category: 'painter',
+                    location: 'Ujjain, Madhya Pradesh',
+                    site_image_url: null,
+                    salary: '₹450/day',
+                    workers: 3,
+                    verified: false,
+                    icon: 'fa-paint-brush'
+                },
+                {
+                    id: 4,
+                    title: 'Electrical Work',
+                    category: 'electrician',
+                    location: 'Bhopal, Madhya Pradesh',
+                    site_image_url: null,
+                    salary: '₹700/day',
+                    workers: 1,
+                    verified: true,
+                    icon: 'fa-bolt'
+                },
+                {
+                    id: 5,
+                    title: 'Carpentry Work',
+                    category: 'carpenter',
+                    location: 'Indore, Madhya Pradesh',
+                    site_image_url: null,
+                    salary: '₹550/day',
+                    workers: 2,
+                    verified: true,
+                    icon: 'fa-saw'
+                },
+                {
+                    id: 6,
+                    title: 'Welding Job',
+                    category: 'welder',
+                    location: 'Ujjain, Madhya Pradesh',
+                    site_image_url: null,
+                    salary: '₹650/day',
+                    workers: 3,
+                    verified: false,
+                    icon: 'fa-fire'
+                },
+                {
+                    id: 7,
+                    title: 'Senior Mason Work',
+                    category: 'mason',
+                    location: 'Indore, Madhya Pradesh',
+                    site_image_url: null,
+                    salary: '₹750/day',
+                    workers: 5,
+                    verified: true,
+                    icon: 'fa-hammer'
+                },
+                {
+                    id: 8,
+                    title: 'Commercial Painting',
+                    category: 'painter',
+                    location: 'Bhopal, Madhya Pradesh',
+                    site_image_url: null,
+                    salary: '₹500/day',
+                    workers: 6,
+                    verified: true,
+                    icon: 'fa-paint-brush'
+                }
+            ];
+            renderJobs();
+        }
+
+        // Get appropriate icon for skill
+        function getSkillIcon(skill) {
+            const iconMap = {
+                'mason': 'fa-hammer',
+                'plumber': 'fa-wrench',
+                'painter': 'fa-paint-brush',
+                'electrician': 'fa-bolt',
+                'carpenter': 'fa-saw',
+                'welder': 'fa-fire'
+            };
+            return iconMap[skill] || 'fa-tools';
+        }
+
+        // Render Jobs
+        function renderJobs() {
+            const jobsGrid = document.getElementById('jobsGrid');
+            let filteredJobs = jobsData;
+
+            // Apply category filter
+            if (currentFilter !== 'all') {
+                filteredJobs = filteredJobs.filter(job => job.category === currentFilter);
+            }
+
+            // Apply relevant filter
+            if (showRelevantOnly) {
+                filteredJobs = filteredJobs.filter(job => job.verified);
+            }
+
+            // Clear loading state
+            jobsGrid.innerHTML = '';
+
+            // Render job cards
+            if (filteredJobs.length === 0) {
+                jobsGrid.innerHTML = `
+                    <div class="loading">
+                        <i class="fas fa-inbox"></i>
+                        <p>No jobs found</p>
+                    </div>
+                `;
+                return;
+            }
+
+            filteredJobs.forEach(job => {
+                const jobCard = createJobCard(job);
+                jobsGrid.appendChild(jobCard);
+            });
+
+            // Update heading
+            updateHeading();
+        }
+
+        // Create Job Card
+        function createJobCard(job) {
+            const card = document.createElement('div');
+            card.className = 'job-card';
+            
+            // Determine image source: use site_image_url if available, otherwise use icon
+            const imageContent = job.site_image_url 
+                ? `<img src="${job.site_image_url}" alt="${job.title}" style="width: 48px; height: 48px; border-radius: 12px; object-fit: cover;" onerror="this.style.display='none'; this.nextElementSibling.style.display='flex';">
+                   <div class="job-icon" style="display: none;">
+                       <i class="fas ${job.icon}"></i>
+                   </div>`
+                : `<div class="job-icon">
+                       <i class="fas ${job.icon}"></i>
+                   </div>`;
+            
+            const safeTitle = escapeHtml(job.title);
+            const safeLocation = escapeHtml(job.location || 'Location not provided');
+            const safeSalary = escapeHtml(job.salary);
+            const safeWorkers = escapeHtml(job.workers);
+            card.innerHTML = `
+                <div class="job-card-content">
+                    <div class="job-left">
+                        ${imageContent}
+                        <div class="job-details">
+                            <h3 class="job-title">${safeTitle}</h3>
+                            <div class="job-location">
+                                <i class="fas fa-map-marker-alt"></i>
+                                ${safeLocation}
+                            </div>
+                            <div class="job-meta">
+                                <span class="job-salary">${safeSalary}</span>
+                                <span class="job-workers">
+                                    <i class="fas fa-users"></i>
+                                    ${safeWorkers} Workers needed
+                                </span>
+                                ${job.verified ? `
+                                    <span class="verified-badge">
+                                        <i class="fas fa-check-circle"></i>
+                                        Verified
+                                    </span>
+                                ` : ''}
+                            </div>
+                        </div>
+                    </div>
+                    <div class="job-right">
+                        <button class="apply-btn" onclick="applyForJob('${job.id}')">
+                            Apply Now
+                        </button>
+                        <div class="location-buttons">
+                            <button class="location-btn view-btn" onclick="viewLocation('${encodeURIComponent(job.location || '')}')">
+                                <i class="fas fa-map"></i>
+                                View Location
+                            </button>
+                            <button class="location-btn navigate-btn" onclick="navigateToLocation('${encodeURIComponent(job.location || '')}')">
+                                <i class="fas fa-directions"></i>
+                                Navigate
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            `;
+            return card;
+        }
+
+        // Filter Jobs
+        function filterJobs(category) {
+            currentFilter = category;
+            document.querySelectorAll('.filter-btn').forEach(btn => {
+                btn.classList.remove('active');
+            });
+            const matchingBtn = Array.from(document.querySelectorAll('.filter-btn'))
+                .find(btn => (btn.getAttribute('onclick') || '').includes(`'${category}'`));
+            if (matchingBtn) matchingBtn.classList.add('active');
+            // Re-render jobs
+            renderJobs();
+        }
+
+        // Show All Jobs
+        function showAllJobs() {
+            currentFilter = 'all';
+            
+            // Remove active state from all filters
+            document.querySelectorAll('.filter-btn').forEach(btn => {
+                btn.classList.remove('active');
+            });
+            
+            // Re-render jobs
+            renderJobs();
+        }
+
+        // Toggle Relevant Jobs
+        function toggleRelevantJobs() {
+            const toggle = document.getElementById('relevantToggle');
+            showRelevantOnly = toggle.checked;
+            renderJobs();
+        }
+
+        // Update Heading
+        function updateHeading() {
+            const heading = document.getElementById('jobHeading');
+            const location = 'Bhopal'; // Could be dynamic
+            
+            if (currentFilter === 'all') {
+                heading.textContent = `Showing all jobs in ${location}`;
+            } else {
+                const categoryName = currentFilter.charAt(0).toUpperCase() + currentFilter.slice(1);
+                heading.textContent = `Showing jobs for: ${categoryName} in ${location}`;
+            }
+        }
+
+        // Apply for Job
+        function applyForJob(jobId) {
+            const job = jobsData.find(j => String(j.id) === String(jobId));
+            if (job) {
+                showToast(`Applied successfully for ${job.title}!`, 'success');
+            } else {
+                console.log('Job not found for ID:', jobId);
+                console.log('Available jobs:', jobsData);
+                showToast('Unable to find this job right now.', 'error');
+            }
+        }
+
+        // View Location using Google Maps Search
+        function viewLocation(encodedLocation) {
+            if (!encodedLocation) {
+                showToast('Location not available for this job.', 'error');
+                return;
+            }
+            const googleMapsUrl = `https://www.google.com/maps/search/?api=1&query=${encodedLocation}`;
+            window.open(googleMapsUrl, '_blank');
+        }
+
+        // Navigate to Location using Google Maps Directions
+        function navigateToLocation(encodedLocation) {
+            if (!encodedLocation) {
+                showToast('Location not available for this job.', 'error');
+                return;
+            }
+            // Try to get user's current location for directions
+            if (navigator.geolocation) {
+                navigator.geolocation.getCurrentPosition(
+                    (position) => {
+                        const userLat = position.coords.latitude;
+                        const userLng = position.coords.longitude;
+                        const directionsUrl = `https://www.google.com/maps/dir/?api=1&origin=${userLat},${userLng}&destination=${encodedLocation}`;
+                        window.open(directionsUrl, '_blank');
+                    },
+                    (error) => {
+                        // If geolocation fails, just open the location
+                        console.log('Geolocation failed, opening location only');
+                        showToast('Could not access GPS. Opening map view.', 'info');
+                        const googleMapsUrl = `https://www.google.com/maps/search/?api=1&query=${encodedLocation}`;
+                        window.open(googleMapsUrl, '_blank');
+                    }
+                );
+            } else {
+                // If geolocation is not supported, open the location
+                const googleMapsUrl = `https://www.google.com/maps/search/?api=1&query=${encodedLocation}`;
+                window.open(googleMapsUrl, '_blank');
+            }
+        }
+
+        // Add smooth scroll behavior
+        document.querySelectorAll('a[href^="#"]').forEach(anchor => {
+            anchor.addEventListener('click', function (e) {
+                e.preventDefault();
+                const target = document.querySelector(this.getAttribute('href'));
+                if (target) {
+                    target.scrollIntoView({ behavior: 'smooth' });
+                }
+            });
+        });
+
+        // Add scroll animations
+        window.addEventListener('scroll', () => {
+            const cards = document.querySelectorAll('.job-card');
+            cards.forEach(card => {
+                const rect = card.getBoundingClientRect();
+                const isVisible = rect.top < window.innerHeight && rect.bottom > 0;
+                
+                if (isVisible) {
+                    card.style.opacity = '1';
+                    card.style.transform = 'translateY(0)';
+                }
+            });
+        });
+    </script>
+</body>
+</html>
